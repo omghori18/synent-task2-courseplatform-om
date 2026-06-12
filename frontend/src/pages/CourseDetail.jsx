@@ -75,7 +75,8 @@ export default function CourseDetail() {
       setEnrolling(true);
       try {
         await api.post(`/api/enroll/${id}`);
-        toast.success('🎉 Enrolled successfully! Start learning now.');
+        toast.success('Enrolled successfully! Start learning now.');
+        toast.info(`Enrollment confirmation sent to ${user?.email}`, { autoClose: 5000 });
         setIsEnrolled(true);
         navigate(`/learn/${id}`);
       } catch (err) {
@@ -113,7 +114,8 @@ export default function CourseDetail() {
               razorpay_signature: response.razorpay_signature,
               courseId: id,
             });
-            toast.success('🎉 Payment successful! You are now enrolled.');
+            toast.success('Payment successful! You are now enrolled.');
+            toast.info(`Enrollment confirmation sent to ${user?.email}`, { autoClose: 5000 });
             setIsEnrolled(true);
             navigate(`/learn/${id}`);
           } catch {

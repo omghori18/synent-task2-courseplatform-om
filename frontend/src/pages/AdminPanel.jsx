@@ -12,8 +12,175 @@ const EMPTY_COURSE = {
   modules: [],
 };
 
+const EMPTY_LESSON = { title: '', videoUrl: '', duration: '5:00' };
+
 const CATEGORIES = ['Web Development', 'Backend', 'Database', 'Full Stack', 'Design', 'Data Science', 'Mobile', 'DevOps'];
 
+// ── Module/Lesson Editor Component ──
+function ModuleEditor({ modules, onChange }) {
+  const addModule = () => {
+    onChange([...modules, { title: '', lessons: [] }]);
+  };
+
+  const removeModule = (mi) => {
+    onChange(modules.filter((_, i) => i !== mi));
+  };
+
+  const updateModuleTitle = (mi, title) => {
+    const updated = [...modules];
+    updated[mi] = { ...updated[mi], title };
+    onChange(updated);
+  };
+
+  const addLesson = (mi) => {
+    const updated = [...modules];
+    updated[mi] = {
+      ...updated[mi],
+      lessons: [...updated[mi].lessons, { ...EMPTY_LESSON }],
+    };
+    onChange(updated);
+  };
+
+  const removeLesson = (mi, li) => {
+    const updated = [...modules];
+    updated[mi] = {
+      ...updated[mi],
+      lessons: updated[mi].lessons.filter((_, i) => i !== li),
+    };
+    onChange(updated);
+  };
+
+  const updateLesson = (mi, li, field, value) => {
+    const updated = [...modules];
+    const lessons = [...updated[mi].lessons];
+    lessons[li] = { ...lessons[li], [field]: value };
+    updated[mi] = { ...updated[mi], lessons };
+    onChange(updated);
+  };
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div className="flex items-center justify-between mb-3">
+        <label className="form-label" style={{ margin: 0 }}>Modules & Lessons</label>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={addModule}
+          id="add-module-btn"
+        >
+          + Add Module
+        </button>
+      </div>
+
+      {modules.length === 0 && (
+        <p className="text-sm text-muted" style={{ padding: '16px 0', textAlign: 'center' }}>
+          No modules yet. Click "Add Module" to get started.
+        </p>
+      )}
+
+      {modules.map((mod, mi) => (
+        <div
+          key={mi}
+          style={{
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 12,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Module Header */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 14px',
+              background: 'var(--sidebar-bg)',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <span className="text-xs font-bold text-muted" style={{ flexShrink: 0 }}>
+              M{mi + 1}
+            </span>
+            <input
+              className="form-input"
+              style={{ padding: '6px 10px', fontSize: '0.85rem', flex: 1 }}
+              placeholder="Module title..."
+              value={mod.title}
+              onChange={(e) => updateModuleTitle(mi, e.target.value)}
+            />
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+              onClick={() => removeModule(mi)}
+            >
+              Remove
+            </button>
+          </div>
+
+          {/* Lessons */}
+          <div style={{ padding: '10px 14px' }}>
+            {mod.lessons.map((lesson, li) => (
+              <div
+                key={li}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 80px auto',
+                  gap: 8,
+                  marginBottom: 8,
+                  alignItems: 'center',
+                }}
+              >
+                <input
+                  className="form-input"
+                  style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+                  placeholder="Lesson title"
+                  value={lesson.title}
+                  onChange={(e) => updateLesson(mi, li, 'title', e.target.value)}
+                />
+                <input
+                  className="form-input"
+                  style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+                  placeholder="YouTube URL"
+                  value={lesson.videoUrl}
+                  onChange={(e) => updateLesson(mi, li, 'videoUrl', e.target.value)}
+                />
+                <input
+                  className="form-input"
+                  style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+                  placeholder="5:00"
+                  value={lesson.duration}
+                  onChange={(e) => updateLesson(mi, li, 'duration', e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  style={{ padding: '4px 8px', color: 'var(--error)', fontSize: '0.85rem' }}
+                  onClick={() => removeLesson(mi, li)}
+                  title="Remove lesson"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              style={{ fontSize: '0.8rem', color: 'var(--accent)' }}
+              onClick={() => addLesson(mi)}
+            >
+              + Add Lesson
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Course Modal ──
 function CourseModal({ course, onClose, onSave }) {
   const [form, setForm] = useState(course || EMPTY_COURSE);
   const [saving, setSaving] = useState(false);
@@ -21,6 +188,10 @@ function CourseModal({ course, onClose, onSave }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
+  };
+
+  const handleModulesChange = (modules) => {
+    setForm((p) => ({ ...p, modules }));
   };
 
   const handleSubmit = async (e) => {
@@ -43,7 +214,7 @@ function CourseModal({ course, onClose, onSave }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 720 }}>
         <div className="modal-header">
           <h3>{course?._id ? 'Edit Course' : 'Add New Course'}</h3>
           <button className="btn btn-ghost btn-sm" onClick={onClose} id="modal-close">✕</button>
@@ -78,6 +249,9 @@ function CourseModal({ course, onClose, onSave }) {
               <label className="form-label">Thumbnail URL</label>
               <input className="form-input" name="thumbnail" value={form.thumbnail} onChange={handleChange} placeholder="https://..." type="url" />
             </div>
+
+            {/* Module / Lesson Editor */}
+            <ModuleEditor modules={form.modules || []} onChange={handleModulesChange} />
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
@@ -125,10 +299,10 @@ export default function AdminPanel() {
   const handleSave = (course, action) => {
     if (action === 'add') {
       setCourses((p) => [course, ...p]);
-      toast.success('✅ Course added successfully!');
+      toast.success('Course added successfully!');
     } else {
       setCourses((p) => p.map((c) => (c._id === course._id ? course : c)));
-      toast.success('✅ Course updated successfully!');
+      toast.success('Course updated successfully!');
     }
     setModal(null);
   };
@@ -217,13 +391,14 @@ export default function AdminPanel() {
                   <th>Course</th>
                   <th>Category</th>
                   <th>Instructor</th>
+                  <th>Modules</th>
                   <th>Price</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {courses.length === 0 ? (
-                  <tr><td colSpan={5} style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>No courses yet</td></tr>
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>No courses yet</td></tr>
                 ) : courses.map((c) => (
                   <tr key={c._id}>
                     <td style={{ fontWeight: 600, maxWidth: 280 }}>
@@ -233,6 +408,7 @@ export default function AdminPanel() {
                     </td>
                     <td><span className="badge badge-accent">{c.category}</span></td>
                     <td>{c.instructor}</td>
+                    <td className="text-muted text-sm">{c.modules?.length || 0} modules</td>
                     <td style={{ fontWeight: 600, color: 'var(--accent)' }}>
                       {c.price === 0 ? <span style={{ color: 'var(--success)' }}>Free</span> : `₹${c.price.toLocaleString('en-IN')}`}
                     </td>

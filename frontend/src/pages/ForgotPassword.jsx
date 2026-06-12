@@ -1,13 +1,26 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../utils/api';
+import { toast } from 'react-toastify';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email) setSubmitted(true);
+    if (!email) return;
+    setLoading(true);
+    try {
+      await api.post('/api/auth/forgot-password', { email });
+      setSubmitted(true);
+      toast.success('Password reset link sent!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send reset link.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +46,7 @@ export default function ForgotPassword() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
+                  disabled={loading}
                 />
               </div>
 
@@ -40,8 +54,9 @@ export default function ForgotPassword() {
                 type="submit"
                 className="btn btn-primary btn-full btn-lg"
                 id="reset-submit"
+                disabled={loading}
               >
-                Send Reset Link
+                {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
             </form>
           </>
@@ -53,7 +68,7 @@ export default function ForgotPassword() {
               If an account exists for <strong>{email}</strong>, you'll receive a password reset link shortly.
             </p>
             <div className="alert alert-success">
-              ✅ Reset link sent (demo — no actual email sent)
+              ✅ Reset link sent to your registered email address.
             </div>
           </div>
         )}
