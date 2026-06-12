@@ -25,7 +25,7 @@ function ProtectedRoute({ children }) {
     </div>
   );
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user && !user.isVerified) return <Navigate to="/verify-email" replace />;
+  if (user && !user.isVerified && user.role !== 'admin') return <Navigate to="/verify-email" replace />;
   return children;
 }
 
