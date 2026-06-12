@@ -78,3 +78,23 @@ npm run dev     # Runs on http://localhost:3000
 ## 🧪 Razorpay Test Card
 
 Use card number `4111 1111 1111 1111` in Razorpay test checkout.
+
+## 📸 Screenshots
+
+### 🖥️ Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### 📖 Course Learning Page
+![Course Learning](screenshots/course_learning.png)
+
+### 🛠️ Admin Panel (Module & Lesson Management)
+![Admin Panel](screenshots/admin_panel.png)
+
+### 🔐 Email Verification Page
+![Email Verification](screenshots/email_verification.png)
+
+### 🔑 Sign In
+![Sign In](screenshots/login.png)
+
+### 📝 Sign Up
+![Sign Up](screenshots/register.png)
